@@ -1,0 +1,168 @@
+@charset "UTF-8";
+/*
+1、#04519f>>#04519f
+2、#337ab7>>#337ab7
+*/
+/* Bootstrap variables */
+/* DevExpress variables */
+.dxbl-image {
+    color: #337ab7;
+}
+
+.dxbl-text-edit {
+    --dxbl-text-edit-focus-shadow-color: #337ab7 !important;
+    --dxbl-text-edit-focus-shadow-spread: 0.05rem !important;
+    --dxbl-text-edit-focus-border-color: #337ab7 !important;
+}
+
+.card-header {
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    background-color: white !important;
+}
+
+.dxbl-accordion .dxbl-accordion-group > .dxbl-accordion-group-body .dxbl-accordion-item-content {
+    padding: 5px var(--dxbl-accordion-group-item-content-padding-x) !important;
+}
+
+.dxbl-modal {
+    --dxbl-popup-header-font-weight: 600 !important;
+}
+
+.dxbl-dropdown-footer > .dxbl-btn-primary {
+    border-color: #04519f !important;
+    background-color: #04519f !important;
+}
+
+.dxbl-grid-filter-menu-dropdown > .dxbl-dropdown-header {
+    display: none !important;
+}
+
+.dxbl-grid-filter-menu-dropdown > .dxbl-dropdown-footer {
+    flex-direction: row-reverse;
+}
+
+.dxbl-grid-filter-menu-dropdown > .dxbl-dropdown-footer > .dxbl-btn {
+    margin: 0 5px;
+}
+
+.bg-primary {
+    background-color: #04519f !important;
+}
+
+.dxbl-btn-primary {
+    --dxbl-btn-bg: #04519f !important;
+    --dxbl-btn-border-color: #04519f !important;
+    --dxbl-btn-color: #fff !important;
+    --dxbl-btn-active-bg: #512e78 !important;
+    --dxbl-btn-active-color: #fff !important;
+    --dxbl-btn-active-border-color: #512e78 !important;
+    --dxbl-btn-hover-bg: #337ab7 !important;
+    --dxbl-btn-hover-color: #fff !important;
+    --dxbl-btn-hover-border-color: #337ab7 !important;
+    --dxbl-btn-disabled-bg: #9f86bb !important;
+    --dxbl-btn-disabled-color: #fff !important;
+    --dxbl-btn-disabled-border-color: #9f86bb !important;
+    --dxbl-btn-disabled-opacity: 1 !important;
+    --dxbl-btn-focus-shadow-color: rgba(95, 54, 141, 0.5) !important;
+    --dxbl-btn-focus-shadow-spread: 0.125rem !important;
+    --dxbl-btn-focus-shadow-blur: 0rem !important;
+}
+
+.dxbl-list-box > .dxbl-scroll-viewer > .dxbl-scroll-viewer-content > ul > li.dxbl-list-box-item-selected::before, .dxbl-list-box-render-container > .dxbl-scroll-viewer > .dxbl-scroll-viewer-content > ul > li.dxbl-list-box-item-selected::before {
+    background-color: #04519f !important;
+}
+
+.dxbl-grid {
+    --dxbl-grid-focus-frame-color: #04519f !important;
+    --dxbl-grid-header-font-weight: 400 !important;
+    --dxbl-grid-font-size: 14px !important;
+}
+
+.dxbl-list-box, .dxbl-list-box-render-container {
+    --dxbl-list-box-column-header-font-weight:400 !important;
+}
+
+.dxbl-btn.dxbl-btn-link, .dxbl-btn.dxbl-btn-outline-link, .dxbl-btn.dxbl-btn-text-link {
+    --dxbl-btn-hover-color: #04519f !important;
+}
+
+.dxbl-grid .dxbl-grid-table > thead > tr.dxbl-grid-editor-inplace-container > td:not(.dxbl-grid-command-cell):not(.dxbl-grid-selection-cell):focus-within, .dxbl-grid .dxbl-grid-table > tbody > tr.dxbl-grid-editor-inplace-container > td:not(.dxbl-grid-command-cell):not(.dxbl-grid-selection-cell):focus-within, .dxbl-grid .dxbl-grid-table > tfoot > tr.dxbl-grid-editor-inplace-container > td:not(.dxbl-grid-command-cell):not(.dxbl-grid-selection-cell):focus-within {
+    outline: none !important;
+}
+
+.dxbl-checkbox {
+    --dxbl-checkbox-check-element-checked-bg: #04519f !important;
+    --dxbl-checkbox-radio-checked-border-color: #04519f !important;
+    --dxbl-checkbox-switch-checked-bg: #04519f !important;
+    --dxbl-checkbox-radio-check-bg: #04519f !important;
+    --dxbl-checkbox-checked-focus-shadow-color: #337ab7 !important;
+    --dxbl-checkbox-unchecked-focus-shadow-color: #337ab7 !important;
+    --dxbl-checkbox-check-element-checked-hover-bg: #337ab7 !important;
+    --dxbl-checkbox-switch-checked-hover-bg: #337ab7 !important;
+    --dxbl-checkbox-radio-checked-hover-bg: #337ab7 !important;
+    --dxbl-checkbox-radio-checked-hover-border-color: #337ab7 !important;
+}
+
+.dxbs-fixed-header-content > span {
+    font-weight: 400 !important;
+}
+
+.dxbl-btn.dxbl-disabled, .dxbl-btn:disabled {
+    opacity: 0.4 !important;
+    background-color: #d2d2d2;
+    color:black;
+}
+
+.dxbl-group > .dxbl-group-header {
+    background-color: white !important;
+}
+
+.dxbl-listbox {
+    --dxbl-listbox-item-selected-bg: #04519f !important;
+    --dxbl-listbox-item-multi-selected-bg: #04519f !important;
+    --dxbl-listbox-item-selected-hover-bg: #337ab7 !important;
+    --dxbl-listbox-item-multi-selected-hover-bg: #337ab7 !important;
+}
+
+.dxbl-wait-indicator {
+    --dxbl-wait-indicator-color: #04519f !important;
+}
+
+.dxbl-loading-panel .dxbl-loading-panel-message {
+    color: #04519f !important;
+}
+
+.dx-chart-def-icon {
+    fill: #04519f !important;
+}
+
+.dxbl-grid td hr {
+    padding: 0px;
+    margin: 0 -0.375rem !important;
+}
+
+.dxbl-grid a {
+    color: #337ab7 !important;
+}
+
+.progress-bar {
+    background-color: #337ab7 !important;
+}
+
+.dxbl-text-edit::after {
+    border-color: #04519f !important;
+}
+
+.dxbl-pager {
+    --dxbl-pager-active-page-btn-bg: #04519f !important;
+}
+
+.dxbl-toolbar > .dxbl-btn-toolbar > .dxbl-toolbar-title {
+    font-size: 14px;
+    font-weight: 400 !important;
+}
+
+.dxbl-toolbar-dropdown {
+    --dxbl-dropdown-min-width: 100px !important;
+}

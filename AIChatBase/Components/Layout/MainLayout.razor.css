@@ -1,0 +1,41 @@
+﻿.page {
+    height: 100%;
+    overflow: hidden;
+    background-color: inherit;
+}
+
+::deep .page-layout,
+::deep .page-layout > .dx-gridlayout-root,
+::deep .layout-item {
+    /*  background-color: inherit;*/
+}
+
+::deep .content {
+    padding: 1.1rem 2rem 0 2rem;
+    overflow: auto;
+}
+
+@media (max-width: 1199.98px) {
+    ::deep .page-layout > .dx-gridlayout-root {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+}
+
+::deep .fit-width {
+    max-width: 100%;
+}
+
+::deep .mw-1100 {
+    max-width: 1100px;
+}
+
+.gridlayout-footer {
+    display: block;
+    color: rgba(0,0,0,.609);
+    border-top: 1px solid rgba(0,0,0,.1);
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+}

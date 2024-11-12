@@ -1,0 +1,20 @@
+﻿@using AIChatBase.Data.Models.Customs
+<CascadingAuthenticationState>
+    <CascadingValue Value="_userInitialState">
+    <Router AppAssembly="@typeof(Program).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p>抱歉，改地址不存在</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+    </CascadingValue>
+</CascadingAuthenticationState>
+
+@code{
+    [Parameter]
+    public UserInitialState _userInitialState { get; set; }
+}

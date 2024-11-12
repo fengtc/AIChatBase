@@ -1,0 +1,256 @@
+﻿@using Blazored.LocalStorage
+@using DevExtreme.AspNet.Data
+@using AIChatBase.Authentication
+@using AIChatBase.Data.Services.OssData
+@using AIChatBase.Data.Models.BaseData
+@using AIChatBase.Data.Models.Customs
+@using AIChatBase.Data.Services.Navigations
+@using AIChatBase.Data.Services.OssId
+@using System.Security.Claims
+@using ParateraNetUtil.Utils.Values
+@inherits LayoutComponentBase
+@inject NavigationManager _navigationManager
+@inject INavigationManagerService _navigationManagerService
+@inject IConfiguration _configuration
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject ILocalStorageService _localStorage
+@inject IOssDataService _ossDataService
+@inject IOssIdService _ossIdService
+@inject IJSRuntime JS
+@inject ILogger<MainLayout> _logger
+
+<div id="water-marker"></div>
+<div class="page">
+    @Body 
+</div>
+
+@code{
+    [CascadingParameter] public UserInitialState _userInitialState { get; set; }
+    string? NavMenuCssClass { get; set; }
+    #region 菜单加载
+    /// <summary>
+    /// 登录用户信息，加载菜单使用
+    /// </summary>
+    ClaimsPrincipal authedUser { get; set; }
+    /// <summary>
+    /// 菜单列表
+    /// </summary>
+    List<OssMenuItem> menuList { get; set; }
+    /// <summary>
+    /// 菜单：登录页
+    /// </summary>
+    List<OssMenuItem> loginMenu = new List<OssMenuItem>()
+    {
+        new OssMenuItem() { id = 2, text = "登录", url = "login", fatherId = 0, order = 2 }
+    };
+
+    #endregion
+    bool _isMobileLayout;
+    bool IsMobileLayout
+    {
+        get => _isMobileLayout;
+        set
+        {
+            _isMobileLayout = value;
+            IsSidebarExpanded = !_isMobileLayout;
+        }
+    }
+
+    bool _isSidebarExpanded = true;
+    bool IsSidebarExpanded
+    {
+        get => _isSidebarExpanded;
+        set
+        {
+            if(_isSidebarExpanded != value)
+            {
+                NavMenuCssClass = value ? "expand" : "collapse";
+                _isSidebarExpanded = value;
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _navigationManager.LocationChanged += OnLocationChanged;
+        //获取登录用户信息
+        authedUser = await AuthUtils.GetAuthUser(authenticationStateProvider);
+        if (authedUser == null || authedUser.Identity == null || !authedUser.Identity.IsAuthenticated) //未授权
+        {
+            var wxCode = _navigationManagerService.GetWxUserCode();
+            if (string.IsNullOrWhiteSpace(wxCode))
+            {
+                var envName = _navigationManagerService.GetEnvjudge(_userInitialState.UserAgent);
+                //menuList = loginMenu;
+                var isMobileLogin = (envName == UserAgentEnum.COM_WX_MOBILE || envName == UserAgentEnum.WX_MOBILE) ? true : false;
+                await _localStorage.SetItemAsync("is_mobile_login", isMobileLogin);
+                if (envName == UserAgentEnum.COM_WX_MOBILE || envName == UserAgentEnum.COM_WX_PC)
+                {                   
+                    var uri = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=" + _configuration["QYWXCorpId"] + "&redirect_uri=" + _navigationManager.BaseUri + "&response_type=code&scope=snsapi_base#wechat_redirect";
+                    _navigationManager.NavigateTo(uri);
+                }
+                else
+                {
+                    await _localStorage.SetItemAsync("is_wx_login", false);
+                    _navigationManager.NavigateTo(_navigationManager.BaseUri + "Login");
+                }
+                return;
+
+            }
+            var servicename = $"{_configuration["ServiceName"]}({_configuration["ServiceChineseName"]})"; //服务名称(英文+中文)
+            var AgentId = _configuration["QYWXAgentId"];
+            var identifyToken = await _ossIdService.NewLogin(AgentId, wxCode, servicename, _userInitialState.IP, _userInitialState.UserAgent);
+            if (identifyToken != null && !string.IsNullOrWhiteSpace(identifyToken.token))
+            {
+                var authProvider = (CustomAuthenticationStateProvider)authenticationStateProvider;
+                var signState = await authProvider.AuthOssTokenAsync(identifyToken.token);
+                if (signState)
+                {
+                    await _localStorage.SetItemAsync("oss_token", identifyToken.token); //登录成功设置token
+                    await _localStorage.SetItemAsync("oss_login_username", identifyToken.name);
+                    await AddWaterMarker(identifyToken.name + StringUtil.GetMobileLast(identifyToken.mobile));
+
+                    _navigationManager.NavigateTo(_navigationManager.BaseUri + "Chat");
+                }
+            }
+        }
+        else
+        {
+            var chatUri = _navigationManager.BaseUri + "Chat";
+            if (_navigationManager.Uri != chatUri)
+            {
+                _navigationManager.NavigateTo(chatUri);
+            }
+            Timer timer = new Timer(TimerCallback, null, TimeSpan.FromMinutes(30), Timeout.InfiniteTimeSpan);
+            var waterMarker = await _localStorage.GetItemAsync<string>("oss_user_water_marker");
+            if (!string.IsNullOrWhiteSpace(waterMarker))
+            {
+                await JS.InvokeVoidAsync("addWaterMarker", waterMarker);
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Delay(50);           
+        }
+    }
+
+        private void TimerCallback(object state)
+    {
+        int maxRetries = 3; // 设置最大重试次数
+        for (int i = 1; i <= maxRetries; i++)
+        {          
+            try
+            {
+                var authProvider = (CustomAuthenticationStateProvider)authenticationStateProvider;
+                var signState = authProvider.AuthOssTokenAsync().Result;
+                if (signState)
+                {
+                    break;
+                }
+                else if (i == maxRetries)
+                {
+                    authProvider.SignOutAsync();
+                }
+                Thread.Sleep(30000 * i);
+            }
+            catch
+            {
+                // 如果发生异常，增加重试计数
+                Thread.Sleep(30000 * i);
+            }
+        }
+        Timer timer = new Timer(TimerCallback, null, TimeSpan.FromMinutes(30), Timeout.InfiniteTimeSpan);
+    }
+
+    private async Task AddWaterMarker(string userInfo)
+    {
+        var waterMarker = await JS.InvokeAsync<string>("getWaterMarkerImg", userInfo);
+        await _localStorage.SetItemAsync("oss_user_water_marker", waterMarker);
+        if (!string.IsNullOrWhiteSpace(waterMarker))
+        {
+            await JS.InvokeVoidAsync("addWaterMarker", waterMarker);
+        }
+    }
+
+    async void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        if(IsMobileLayout)
+        {
+            IsSidebarExpanded = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        _navigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+    /// <summary>
+    /// 获取系统菜单
+    /// </summary>
+    /// <returns></returns>
+    private async Task<List<OssMenuItem>> getMenuList()
+    {
+        var queryOptions = new DataSourceLoadOptionsBase()
+        {
+            RequireTotalCount = true,
+            Filter = new List<object>()
+            {
+                new List<object>(){ "serviceName", "=", _configuration["ServiceName"] },
+                "and",
+                new List<object>(){ "visible", "=", 1 }
+            }
+        };
+        var menuDatas = await _ossDataService.GetAllOssMenuItemList(queryOptions);
+        return menuDatas;
+    }
+
+    /// <summary>
+    /// 根据登录角色显示对应菜单
+    /// </summary>
+    /// <param name="menuDatas"></param>
+    /// <returns></returns>
+    private List<OssMenuItem> getLoginUserMenu(List<OssMenuItem> menuDatas)
+    {
+        var reMenuList = new List<OssMenuItem>();
+        if (menuDatas != null && menuDatas.Count > 0)
+        {
+            var thisMenuList = new List<OssMenuItem>();
+            var serviceTestRole = $"{_configuration["ServiceName"].ToUpper()}_TEST";//测试员权限
+            if (authedUser.IsInRole(serviceTestRole))
+            {
+                //系统测试员直接获取全部菜单
+                thisMenuList = menuDatas;  
+            }
+            else
+            {   
+                //其他角色按确定分配处理
+                var serviceMenu = $"{_configuration["ServiceName"].ToUpper()}_MENU";//服务菜单
+                var roleIdList = authedUser.Claims.Select(o => o.Value).Where(o => o.StartsWith(serviceMenu)).ToList();
+                thisMenuList = menuDatas.Where(o => roleIdList.Contains(o.roleId.ToUpper())).ToList();
+            }
+
+            //菜单父级子级关系处理
+            if (thisMenuList.Count > 0)
+            {
+                var fatherList = thisMenuList.Where(o => o.fatherId == null || o.fatherId == 0).OrderBy(o => o.order).ToList();
+                foreach (var item in fatherList)
+                {
+                    reMenuList.Add(item);
+                    var sonMenuList = thisMenuList.Where(p => p.fatherId == item.id).OrderBy(o => o.order).ToList();
+                    if (sonMenuList != null && sonMenuList.Any())
+                    {
+                        item.url = ""; //父菜单url处理,避免点击跳转
+                        reMenuList.AddRange(sonMenuList);
+                    }
+                }                
+            }
+        }
+        return reMenuList;
+    }
+}

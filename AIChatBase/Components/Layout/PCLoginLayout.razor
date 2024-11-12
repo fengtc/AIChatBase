@@ -1,0 +1,50 @@
+﻿@inherits LayoutComponentBase
+@inject IConfiguration _configuration
+
+<DxGridLayout CssClass="w-100 ch-480" style="background-color: rgb(245, 245, 246);">
+    <Rows>
+        <DxGridLayoutRow Height="20%" />
+        <DxGridLayoutRow Height="60%" />
+        <DxGridLayoutRow Height="20%" />
+    </Rows>
+    <Columns>
+        <DxGridLayoutColumn />
+    </Columns>
+    <Items>
+        <DxGridLayoutItem Row="0">
+            <Template>
+                <div class="gridlayout-header gridlayout-item">
+                    <div style='color: #04519f !important; font-size:24px;padding: 20px 0 0 50px;'>
+                        @_configuration["ServiceChineseName"]
+                        <span style='color: #000 !important;'>
+                            <span style='font-size:28px;color: #666;font-weight: 100;'>
+                                |
+                            </span>
+                            登录
+                        </span>
+                    </div>
+                </div>
+            </Template>
+        </DxGridLayoutItem>
+        <DxGridLayoutItem Row="1">
+            <Template>
+                <div class="gridlayout-content gridlayout-item">
+                    <div class="body-content">
+                        <div class="body-content-text">
+                            @Body
+                        </div>
+                    </div>
+                </div>
+            </Template>
+        </DxGridLayoutItem>
+        <DxGridLayoutItem Area="footer">
+            <Template>
+                <div class="gridlayout-footer gridlayout-item">
+                    <span class="footer-text">
+                        Copyright (c) @DateTime.Now.Year 北京并行科技股份有限公司
+                    </span>
+                </div>
+            </Template>
+        </DxGridLayoutItem>
+    </Items>
+</DxGridLayout>

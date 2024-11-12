@@ -1,0 +1,65 @@
+﻿.navbar.header-navbar {
+    flex-grow: 0;
+    flex-wrap: nowrap;
+    border: none;
+    background-color: inherit;
+    border-radius: 0;
+    height: 3rem;
+    min-height: 3rem;
+    box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.12);
+    justify-content: flex-start;
+}
+
+.header-navbar .navbar-toggler {
+    outline: none;
+    border-radius: 0;
+    padding-left: .75rem;
+    padding-right: .75rem;
+    box-shadow: none;
+    align-self: stretch;
+}
+
+    .header-navbar .navbar-toggler .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(255,255,255, 1)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E");
+        background-color: transparent !important;
+        height: 1.5rem;
+        width: 1.5rem;
+    }
+
+.title {
+    color: #04519f !important;
+    font-size: 18px !important;
+    font-weight: 400 !important;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+@media (max-width: 350px) {
+    .title {
+        font-size: inherit;
+    }
+}
+
+.navbar-loginout {
+    margin-left: auto;
+    padding-right: 5px;
+}
+
+.w-mr-10 {
+    margin-right: 10px
+}
+
+::deep{
+    .ai-button {
+        background-color: #04519f !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 50% !important;
+        width: 28px;
+        margin-right: 10px;
+    }
+
+    .ai-button:hover {
+        background-color: #337ab7 !important;
+    }
+}

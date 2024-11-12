@@ -1,0 +1,46 @@
+﻿@page "/Chat"
+@using AIChatBase.Data.Services.QYWX
+@using Blazored.LocalStorage
+@using Microsoft.AspNetCore.Authorization
+@using AIChatBase.Authentication
+@using AIChatBase.CustomComponents.AI
+@using System.Security.Claims
+@using ParateraNetUtil.Utils.Auths
+@inject IConfiguration _configuration
+@inject CustomAuthenticationService _customAuthenticationService
+@inject ILocalStorageService _localStorage
+@inject IQYWXService _qywxService
+<ChatBase ClaimsInfo="@ClaimsInfo" EmptyQuickQuestions="@QuickQuestions" OnNoAuth="@NoAuth"></ChatBase>
+
+@code {
+    /// <summary>
+    /// 无数据显示快捷提问列表
+    /// </summary>
+    public List<string> QuickQuestions { get; set; } = new List<string>();
+    /// <summary>
+    /// 登录用户信息
+    /// </summary>
+    public ClaimInfo ClaimsInfo { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var currentUser = _customAuthenticationService.CurrentUser;
+        ClaimsInfo = AuthUtil.GetClaimInfo(currentUser.Claims);
+        QuickQuestions = new List<string>()
+        {
+            "运营管理系统",
+            "试算申请",
+            "合同列表",
+            "合同充值"
+        };
+    }
+
+    private async Task NoAuth()
+    {
+        var botKey = _configuration["ChatBotKey"];
+        var message = $"{_configuration["ServiceChineseName"]}收到用户 <font color=\"warning\">{ClaimsInfo.UserName}({ClaimsInfo.WXUserId})</font> 权限申请，请及时处理。\n";
+        await _qywxService.PushMessageUseBotMarkdown(message, botKey);
+    }
+
+}

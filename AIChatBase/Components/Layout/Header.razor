@@ -1,0 +1,71 @@
+﻿@using System.Security.Claims;
+@using AIChatBase.CustomComponents.AI
+@using AIChatBase.Data.Services.OssId;
+@using AIChatBase.Authentication;
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+@inherits LayoutComponentBase
+@inject Blazored.LocalStorage.ILocalStorageService _localStorage
+@inject CustomAuthenticationService CustomAuthenticationService
+@inject IOssIdService _ossIdService
+@inject IConfiguration _configuration
+
+<nav class="navbar header-navbar p-0">
+    <button class="navbar-toggler bg-primary d-block" @onclick="OnToggleClick">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="ms-3 fw-bold title pe-4">@_configuration["ServiceChineseName"]</div>
+    <AuthorizeView>
+        <Authorized>
+            <div class="navbar-loginout">
+                <span class="w-mr-10"> @UserName </span>
+                <DxButton RenderStyleMode="ButtonRenderStyleMode.Contained"
+                          RenderStyle="ButtonRenderStyle.Primary"
+                          Text="退出登录"
+                          Click="@LoginOut">
+                </DxButton>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+        </NotAuthorized>
+    </AuthorizeView>
+</nav>
+
+@code {
+    [Parameter] public bool ToggleOn { get; set; }
+    [Parameter] public EventCallback<bool> ToggleOnChanged { get; set; }
+    [CascadingParameter] private Task<AuthenticationState>? authenticationState { get; set; }
+
+    public string? UserName { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        UserName = await _localStorage.GetItemAsync<string>("oss_login_username");
+    }
+
+    async Task OnToggleClick() => await Toggle();
+
+    async Task Toggle(bool? value = null)
+    {
+        var newValue = value ?? !ToggleOn;
+        if (ToggleOn != newValue)
+        {
+            ToggleOn = newValue;
+            await ToggleOnChanged.InvokeAsync(ToggleOn);
+        }
+    }
+
+    async Task LoginOut()
+    {
+        var ossToken = await _localStorage.GetItemAsync<string>("oss_token");
+        var authProvider = (CustomAuthenticationStateProvider)authenticationStateProvider;
+        await authProvider.SignOutAsync();
+        await _localStorage.RemoveItemAsync("oss_token");
+        await _localStorage.RemoveItemAsync("oss_login_username");
+        await _localStorage.RemoveItemAsync("oss_user_water_marker");
+        await JS.InvokeVoidAsync("removeWaterMarker");
+        await _ossIdService.LoginOut(ossToken, UserName);
+        NavigationManager.NavigateTo(NavigationManager.BaseUri + "Login");
+    }
+}

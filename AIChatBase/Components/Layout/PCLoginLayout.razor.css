@@ -1,0 +1,39 @@
+﻿.head-content {
+    line-height: 100px;
+    text-align: center;
+    height: 100px;
+    color: #04519f !important;
+}
+
+.head-content-text {
+    display: inline-block;
+    height: 50px;
+    width: 600px;
+    font-size: 35px;
+}
+
+.body-content {
+    text-align: center;
+}
+
+.body-content-text {
+    display: inline-block;
+    width: 800px;
+}
+
+.gridlayout-header {
+    height: 80px;
+    box-shadow: 0 2px 4px 0 rgba(0,0,0,.1);
+    background-color: white;
+}
+
+.gridlayout-footer {
+    display: block;
+    color: rgba(0,0,0,.609);
+    border-top: 1px solid rgba(0,0,0,.1);
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+}

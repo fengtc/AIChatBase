@@ -1,0 +1,271 @@
+@import url("open.iconic/font/css/open-iconic-bootstrap.min.css");
+
+html,
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.invalid {
+  outline: 1px solid red;
+}
+
+.validation-message {
+  color: red;
+}
+
+#blazor-error-ui {
+  background: lightyellow;
+  bottom: 0;
+  box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+  display: none;
+  left: 0;
+  padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+  position: fixed;
+  width: 100%;
+  z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+  cursor: pointer;
+  position: absolute;
+  right: 0.75rem;
+  top: 0.5rem;
+}
+
+.dxbl-grid {
+  max-height: 85%;
+}
+
+.para-grid {
+  min-height: 400px;
+  max-height: 75%;
+}
+.para-grid-add-btn
+{
+  text-align: right;
+}
+#water-marker {
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  pointer-events: none; /* ȥ��������¼������ɴ�͸��div�����ײ�������div�� */
+  background-size: 120px 120px;
+  position: fixed;
+  background-attachment: fixed;
+}
+
+.required-field:after {
+  content: "*";
+  color: red;
+  margin-left: 2px;
+}
+
+.sidebar-nav {
+  margin-bottom: 22px;
+}
+
+.dxbl-accordion-item-content {
+  font-size: 14px;
+  padding-left: 5px;
+}
+
+.icon-column-chooser {
+  width: 16px;
+  height: 16px;
+  mask-image: url("icons/generic/columnchooser.svg");
+  background-color: currentColor;
+}
+
+.icon-preferences {
+  width: 16px;
+  height: 16px;
+  mask-image: url("icons/generic/preferences.svg");
+  background-color: currentColor;
+}
+
+.icon-save {
+  width: 16px;
+  height: 16px;
+  mask-image: url("icons/generic/save.svg");
+  background-color: currentColor;
+}
+
+.icon-fieldchooser {
+  width: 16px;
+  height: 16px;
+  mask-image: url("icons/generic/fieldchooser.svg");
+  background-color: currentColor;
+}
+.icon-edit {
+  width: 16px;
+  height: 16px;
+  -webkit-mask-box-image: url("icons/generic/edit.svg");
+  mask: url("icons/generic/edit.svg") no-repeat center;
+  background-color: currentColor;
+}
+
+.icon-details_view {
+    width: 16px;
+    height: 16px;
+    -webkit-mask-box-image: url('icons/generic/details_view.svg');
+    mask: url('icons/generic/details_view.svg') no-repeat center; /* 其他浏览器支持的备用属性 */
+    background-color: currentColor;
+}
+
+.icon-details_view {
+    width: 16px;
+    height: 16px;
+    -webkit-mask-box-image: url('icons/generic/details_view.svg');
+    mask: url('icons/generic/details_view.svg') no-repeat center; /* 其他浏览器支持的备用属性 */
+    background-color: currentColor;
+}
+
+.icon-trash {
+  width: 16px;
+  height: 16px;
+  -webkit-mask-box-image: url("icons/generic/trash.svg");
+  mask: url("icons/generic/trash.svg") no-repeat center;
+  background-color: currentColor;
+}
+
+.icon-copy {
+  width: 16px;
+  height: 16px;
+  -webkit-mask-box-image: url("icons/generic/copy.svg");
+  mask: url("icons/generic/copy.svg") no-repeat center; /* Firefox 和 Chrome 均支持的属性 */
+  background-color: currentColor;
+}
+.icon-add {
+  width: 16px;
+  height: 16px;
+  -webkit-mask-box-image: url("icons/generic/add.svg");
+  mask: url("icons/generic/add.svg") no-repeat center;
+  background-color: currentColor;
+}
+.icon-confirm {
+  width: 16px;
+  height: 16px;
+  -webkit-mask-box-image: url("icons/generic/confirm.svg");
+  mask: url("icons/generic/confirm.svg") no-repeat center; /* 其他浏览器支持的备用属性 */
+  background-color: currentColor;
+}
+.icon-split {
+  width: 16px;
+  height: 16px;
+  -webkit-mask-box-image: url("icons/generic/split.svg");
+  mask: url("icons/generic/split.svg") no-repeat center; /* 其他浏览器支持的备用属性 */
+  background-color: currentColor;
+}
+
+.disabledchooser input {
+  pointer-events: none !important;
+  background-color: white;
+}
+
+.red-color-su {
+  color: red !important;
+}
+
+.dxbl-grid-empty-data > span {
+  font-weight: 400 !important;
+  font-size: 14px !important;
+}
+/*.dxbl-grid .dxbl-grid-table .dxbl-grid-focused-row:not(.dxbl-grid-touch-selection):not(.dxbl-grid-touch-selection-edge) > td:not(.dxbl-grid-empty-cell):not(.dxbl-grid-indent-cell) {
+    background-color: #e6e6e6;
+    color: #333;
+}
+.dxbl-grid .dxbl-grid-table .dxbl-grid-focused-row:not(.dxbl-grid-touch-selection):not(.dxbl-grid-touch-selection-edge) > td:not(.dxbl-grid-empty-cell):not(.dxbl-grid-indent-cell) .dxbl-btn.dxbl-btn-link {
+    color: #333;
+}
+/* 修改 DxLoadingPanel 的背景颜色 */
+.dxbl-loading-panel .dxbl-loading-panel-container.dxbl-loading-panel-shading {
+    background-color: #ffffff96;
+}
+
+.icon-export {
+    width: 16px;
+    height: 16px;
+    -webkit-mask-box-image: url("icons/generic/export.svg");
+    mask: url("icons/generic/export.svg") no-repeat center; /* 其他浏览器支持的备用属性 */
+    background-color: currentColor;
+}
+
+.icon-columnchooser {
+    width: 16px;
+    height: 16px;
+    -webkit-mask-box-image: url("icons/generic/columnchooser.svg");
+    mask: url("icons/generic/columnchooser.svg") no-repeat center; /* 其他浏览器支持的备用属性 */
+    background-color: currentColor;
+}
+
+.icon-check {
+    width: 16px;
+    height: 16px;
+    -webkit-mask-box-image: url("icons/generic/check.svg");
+    mask: url("icons/generic/check.svg") no-repeat center; /* 其他浏览器支持的备用属性 */
+    background-color: currentColor;
+}
+
+.icon-chevronup {
+    width: 16px;
+    height: 16px;
+    -webkit-mask-box-image: url("icons/generic/chevronup.svg");
+    mask: url("icons/generic/chevronup.svg") no-repeat center; /* 其他浏览器支持的备用属性 */
+    background-color: currentColor;
+}
+
+.icon-send-fill {
+    width: 16px;
+    height: 16px;
+    -webkit-mask-box-image: url("icons/bootstrap-icons/send-fill.svg");
+    mask: url("icons/bootstrap-icons/send-fill.svg") no-repeat center; /* 其他浏览器支持的备用属性 */
+    background-color: currentColor;
+    color:white;
+}
+
+.icon-range {
+    width: 16px;
+    height: 16px;
+    -webkit-mask-box-image: url("icons/generic/range.svg");
+    mask: url("icons/generic/range.svg") no-repeat center; /* 其他浏览器支持的备用属性 */
+    background-color: currentColor;
+}
+
+.icon-send-fill {
+    width: 16px;
+    height: 16px;
+    -webkit-mask-box-image: url("icons/generic/send-fill.svg");
+    mask: url("icons/generic/send-fill.svg") no-repeat center; /* 其他浏览器支持的备用属性 */
+    background-color: currentColor;
+    color: white;
+}
+
+.icon-refresh {
+    width: 16px;
+    height: 16px;
+    -webkit-mask-box-image: url("icons/generic/refresh.svg");
+    mask: url("icons/generic/refresh.svg") no-repeat center; /* Firefox 和 Chrome 均支持的属性 */
+    background-color: currentColor;
+}
+
+.icon-like1 {
+    width: 16px;
+    height: 16px;
+    -webkit-mask-box-image: url("icons/generic/like1.svg");
+    mask: url("icons/generic/like1.svg") no-repeat center; /* Firefox 和 Chrome 均支持的属性 */
+    background-color: currentColor;
+}
+
+.icon-nolike1 {
+    width: 16px;
+    height: 16px;
+    -webkit-mask-box-image: url("icons/generic/nolike1.svg");
+    mask: url("icons/generic/nolike1.svg") no-repeat center; /* Firefox 和 Chrome 均支持的属性 */
+    background-color: currentColor;
+}

@@ -1,0 +1,130 @@
+﻿@page "/login"
+@using Blazored.LocalStorage
+@using AIChatBase.Components.Layout
+@using AIChatBase.Data.Services.OssData
+@using AIChatBase.Data.Services.OssId;
+@using AIChatBase.Data.Models.Customs;
+@using AIChatBase.Authentication;
+@using AIChatBase.Data.Models.BaseData;
+@using ParateraNetUtil.Utils.Values
+@inject IJSRuntime JS
+@inject IConfiguration _configuration
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILocalStorageService _localStorage
+@inject CustomAuthenticationService CustomAuthenticationService
+@inject IOssDataService _ossDataService
+@inject IOssIdService _ossIdService
+@inject UserInitialState _userInitialState
+@layout PCLoginLayout
+
+<DxGridLayout CssClass="w-100 ch-480">
+    <Rows>
+        <DxGridLayoutRow Height="10%" />
+        <DxGridLayoutRow Height="500" />
+        <DxGridLayoutRow Height="10%" />
+    </Rows>
+    <Columns>
+        <DxGridLayoutColumn Width="45%" />
+        <DxGridLayoutColumn Width="600" />
+        <DxGridLayoutColumn />
+    </Columns>
+    <Items>
+        <DxGridLayoutItem Row="1" Column="1">
+            <Template>
+                <div class="gridlayout-content gridlayout-item">
+                    @if (isDevelopmentEnv)
+                    {
+                        <DxFormLayout CssClass="w-100">
+                            <DxFormLayoutGroup>
+                                <DxFormLayoutItem Caption="模拟用户：">
+                                    <DxComboBox Data="@WXUsers"
+                                            TextFieldName="@nameof(wx_user.name)"
+                                            @bind-Value="@LoginWXUser"
+                                            CssClass="cw-480"
+                                            AllowUserInput="true"
+                                            FilteringMode="DataGridFilteringMode.Contains" />
+                                </DxFormLayoutItem>
+                                <DxFormLayoutItem>
+                                    <DxButton RenderStyle="ButtonRenderStyle.Primary"
+                                          Text="模拟登陆"
+                                          CssClass="w-10 h-100"
+                                          Click="@DevelpLogin">
+                                    </DxButton>
+                                </DxFormLayoutItem>
+                            </DxFormLayoutGroup>
+                        </DxFormLayout>
+                    }
+                    else
+                    {
+                        <div id="scanImg" />
+                    }
+                </div>
+            </Template>
+        </DxGridLayoutItem>
+    </Items>
+</DxGridLayout>
+
+
+@code {
+    bool isDevelopmentEnv = false;
+
+    List<wx_user> WXUsers { get; set; }
+    wx_user? LoginWXUser { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        #if DEBUG
+            isDevelopmentEnv = true;
+        #endif
+        WXUsers = await _ossDataService.GetAllWxUserMemory();
+        LoginWXUser = WXUsers.FirstOrDefault();        
+    }
+
+    private async Task DevelpLogin()
+    {
+        if (LoginWXUser != null && !string.IsNullOrWhiteSpace(LoginWXUser.name))
+        {
+            var servicename = $"{_configuration["ServiceName"]}({_configuration["ServiceChineseName"]})"; //服务名称(英文+中文)
+            var identifyToken = await _ossIdService.Login(LoginWXUser.userid, servicename, _userInitialState.IP, _userInitialState.UserAgent);
+            if (identifyToken != null && !string.IsNullOrWhiteSpace(identifyToken.token))
+            {
+                await AddWaterMarker(identifyToken.name + StringUtil.GetMobileLast(identifyToken.mobile));
+                await _localStorage.SetItemAsync("oss_token", identifyToken.token);
+                await _localStorage.SetItemAsync("oss_login_username", identifyToken.name);
+                NavigationManager.NavigateTo(NavigationManager.BaseUri, true);
+            }
+        }
+    }
+
+    private async Task AddWaterMarker(string userInfo)
+    {
+
+        var waterMarker = await _localStorage.GetItemAsync<string>("oss_user_water_marker");
+        if (string.IsNullOrWhiteSpace(waterMarker))
+        {
+            waterMarker = await JS.InvokeAsync<string>("getWaterMarkerImg", userInfo);
+            await _localStorage.SetItemAsync("oss_user_water_marker", waterMarker);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!isDevelopmentEnv)
+        {
+            if (firstRender)
+            {
+                var qYWXCorpId = _configuration["QYWXCorpId"];
+                var qYWXAgentId = _configuration["QYWXAgentId"];
+
+                await JS.InvokeVoidAsync("WwLogin", new
+                {
+                    id = "scanImg",
+                    appid = qYWXCorpId,
+                    agentid = qYWXAgentId,
+                    redirect_uri = NavigationManager.BaseUri
+                });
+            }
+        }
+    }
+}

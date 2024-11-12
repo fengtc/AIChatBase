@@ -1,0 +1,372 @@
+﻿@using Blazored.LocalStorage
+@using DevExpress.Blazor
+@using DevExpress.Blazor.Internal.VirtualScrollViewer
+@using DevExtreme.AspNet.Data
+@using Markdig
+@using Markdig.Extensions.Tables
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@using Newtonsoft.Json
+@inject IConfiguration _configuration
+@inject IJSRuntime JS
+@inject ChatClient? _chatClient
+@inject ILogger<ChatBase> _logger
+@inject IOssAgentService _ossAgentService
+@inject ILocalStorageService _localStorage
+
+<DxStackLayout CssClass="chat-DxStackLayout" Orientation="Orientation.Vertical">
+    <Items>
+        <DxStackLayoutItem Length="2fr">
+            <Template>
+                <div style="display:flex;justify-content:center;">
+                    <DxWaitIndicator Visible="@IsLoadMoreData"
+                                     AnimationType="WaitIndicatorAnimationType.Spin" />
+                </div>
+                <DxListBox @ref="AIListBox" Data="@ChatData"
+                           @bind-Value="@BindChatValue" SelectionMode="ListBoxSelectionMode.None"
+                           ReadOnly="true" id="chat-list-box"
+                           CssClass="chat-content-listbox">
+                    <ItemTemplate Context="ListItemContext">
+                        <div class="@getContetClass(ListItemContext.UserType)">
+                            <div class="@getMessageClass(ListItemContext.UserType)">
+                                @if (ListItemContext.UserType == "AI")
+                                {
+                                    <div style="margin-bottom: 5px;">
+                                        <img class="chat-photo" src="/images/robot.jpg" />
+                                    </div>
+
+                                    <DxWaitIndicator Visible="!ListItemContext.IsFinish" CssClass="send-wait-indicator" />
+                                    @if (ListItemContext.ReplyContent=="无权限")
+                                    {
+                                        <div style="overflow-x:auto;">
+                                            <span>
+                                                您的帐号暂没开通，如需提前可点【<a href="javascript:void(0);" @onclick="@ApplyPermissionBotSend">申请</a>】 加入等待列表
+                                            </span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div style="overflow-x:auto;">@ConvertToMarkdown(ListItemContext.ReplyContent, ListItemContext.UserType)</div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div style="margin-bottom: 5px; text-align:right">
+                                        <img class="chat-photo" src="/css/icons/generic/person-circle.svg" />
+                                    </div>
+                                    <div>@ConvertToMarkdown(ListItemContext.Content, ListItemContext.UserType)</div>
+                                }
+
+                            </div>
+                        </div>
+                    </ItemTemplate>
+                    <EmptyDataAreaTemplate Context="EmptyContext" >
+                        <DxStackLayout CssClass="w-100 ch-480" Orientation="Orientation.Vertical">
+                            <Items>
+                                <DxStackLayoutItem>
+                                    <Template>
+                                        <div class="empty-data-img">
+                                            <img src="/images/logo2.png" />
+                                        </div>
+                                    </Template>
+                                </DxStackLayoutItem>
+                                <DxStackLayoutItem>
+                                    <Template>
+                                        <div class="empty-data-container">
+                                            @foreach (var item in EmptyItems)
+                                            {
+                                                <DxButton Text="@item.Text" RenderStyle="ButtonRenderStyle.Secondary" RenderStyleMode="ButtonRenderStyleMode.Outline" CssClass="empty-data-button" Click="@(()=>EmptyItemClick(item.Text))" />
+                                            }
+                                        </div>
+                                    </Template>
+                                </DxStackLayoutItem>
+                            </Items>
+                        </DxStackLayout>
+                    </EmptyDataAreaTemplate>
+                </DxListBox>
+            </Template>
+        </DxStackLayoutItem>
+        <DxStackLayoutItem Length="auto">
+            <Template>
+                <DxMemo @ref="ChatMemo" @bind-Text="SendText" @onkeydown="@OnKeyDown" ResizeMode="MemoResizeMode.Disabled" BindValueMode="BindValueMode.OnInput" Rows="2" CssClass="cw-480" style="margin:5px; border-radius:10px; padding-right:40px; font-size:15px; " Enabled="!IsSending" NullText="Enter 发送" />
+                <DxButton Context="SendButtonContext" Click="@Send" Enabled="!IsSending" CssClass="chat-send-button" IconCssClass="icon-send-fill">
+                </DxButton>
+            </Template>
+        </DxStackLayoutItem>
+        <DxStackLayoutItem Length="auto">
+            <Template>
+                <div style="display: flex;">
+                    <div class="icp">
+                        AI回复可能出现错误，重要信息请核查
+                    </div>
+                </div>
+            </Template>
+        </DxStackLayoutItem>
+    </Items>
+</DxStackLayout>
+
+<div class="d-flex align-items-center custom-toast-background">
+    <DxToastProvider Name="CustomToast"
+                     MaxToastCount="5"
+                     AnimationType="ToastAnimationType.Slide"
+                     ThemeMode="ToastThemeMode.Saturated"
+                     ShowCloseButton ="false"
+                     HorizontalAlignment="HorizontalAlignment.Center"
+                     VerticalAlignment="VerticalEdge.Top" />
+</div>
+
+<script>
+    function scrollListBoxToBottom(listBoxId) {
+        // 通过ID找到DxListBox的DOM元素
+        var listBox = document.getElementById(listBoxId);
+        if (listBox) {
+            // 假设DxListBox内部的滚动容器有特定的类名
+            var scrollContainer = listBox.querySelector('.dxbl-scroll-viewer-content');
+
+            // 如果存在滚动容器，则滚动到底部
+            if (scrollContainer) {
+                scrollContainer.scrollTop = scrollContainer.scrollHeight;
+            }
+        }
+    }
+
+    window.registerScrollEvent = (listBoxId, dotNetHelper) => {
+        var listBox = document.getElementById(listBoxId);
+        if (listBox) {
+            // 假设DxListBox内部的滚动容器有特定的类名
+            var scrollContainer = listBox.querySelector('.dxbl-scroll-viewer-content');
+
+            // 如果存在滚动容器，则滚动到底部
+            if (scrollContainer) {
+                scrollContainer.addEventListener('scroll', () => {
+                    if (scrollContainer.scrollTop === 0) {
+                        dotNetHelper.invokeMethodAsync('LoadMoreData');
+                    }
+                });
+            }
+        }
+    };
+</script>
+
+<style>
+    .chat-window-body {
+        padding: 0 !important;
+    }
+
+        .chat-window-body ul::before {
+            background-color: white !important;
+        }
+
+        .chat-window-body :focus {
+            outline: none !important;
+        }
+
+    .chat-content-left {
+        text-align: left;
+    }
+
+    .chat-message-ai {
+        position: relative;
+        background-color: #f2f2f2c7;
+        margin: 5px 0;
+        border-radius: 5px;
+        padding: 5px;
+        display: inline-grid;
+        text-align: left;
+        max-width: 90%;
+    }
+
+    .chat-message-user {
+        position: relative;
+        background-color: #E8F1FB;
+        margin: 5px 0;
+        border-radius: 5px;
+        padding: 5px;
+        display: inline-grid;
+        text-align: left;
+        max-width: 90%;
+    }
+
+    .chat-message-left {
+        position: relative;
+        background-color: #f2f2f2c7;
+        margin: 5px 0;
+        border-radius: 5px;
+        padding: 5px;
+        display: inline-grid;
+        text-align: left;
+        max-width: 90vw;
+    }
+
+    .chat-message-right {
+        margin: 5px 0;
+        padding: 5px;
+        border-radius: 5px;
+        background-color: #E8F1FB;
+        display: inline-grid;
+        text-align: left;
+        max-width: 90vw;
+    }
+
+    .chat-content-right {
+        text-align: right;
+    }
+
+    .chat-content-listbox {
+        width: 100%;
+        height: 100%;
+        font-size: 15px !important;
+        border-top-color:white;
+    }
+
+        .chat-content-listbox p {
+            margin: 0 !important;
+        }
+
+    .chat-send-button {
+        position: absolute;
+        background-color: #337ab7 !important;
+        border-radius: 50%;
+        width: 32px;
+        right: 10px;
+        bottom: 31px;
+        border: none;
+    }
+
+    .icp {
+        font-size: 11px;
+        color: #686868;
+        width: 100%;
+        text-align: center;
+    }
+
+    table {
+        border-width: 1px;
+        border-color: #666666;
+        border-collapse: collapse;
+    }
+
+    th {
+        border-width: 1px;
+        padding: 8px;
+        border-style: solid;
+        border-color: #666666;
+        background-color: #dedede;
+    }
+
+    td {
+        border-width: 1px;
+        padding: 8px;
+        border-style: solid;
+        border-color: #666666;
+        background-color: #ffffff;
+    }
+
+    a {
+        color: #0366d6;
+        text-decoration: none;
+    }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+    code:not([class]) {
+        padding: 0.2em 0.4em;
+        margin: 0;
+        font-size: 85%;
+        background-color: rgba(27,31,35,0.05);
+        border-radius: 3px;
+    }
+
+    .mini-btn {
+        padding: 0;
+    }
+
+    .chat-photo {
+        width: 25px;
+        height: 25px;
+        border-radius: 18px;
+        display: inline-flex;
+        line-height: 12px;
+        align-items: center;
+    }
+
+    .chat-time {
+        font-size: 12px;
+        width: 180px;
+        color: #999;
+        vertical-align: bottom;
+    }
+
+    .chat-DxStackLayout {
+        /* height: 80vh;*/
+        height: 100%;
+        width: 100%;
+    }
+
+    .chat-toolbar-item{
+        font-size: 11px;
+        width: 100%;
+        justify-content: start;
+    }
+
+    .dxbl-btn-group-first{
+        padding-left:5px !important;
+    }
+
+    .dxbl-btn-group {
+        padding: 5px 0;
+    }
+
+    .toolbar-button-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .change-batch-button {
+        margin-left: 5px; /* 根据需要调整间距 */
+        font-size: 11px;
+    }
+
+    .empty-data-button
+    {
+        height: 75px;
+        width:150px;
+    }
+
+    .empty-data-button > span {
+        text-align: left;
+        font-size: 13px;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal;
+    }
+
+    .empty-data-img{
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+
+    .empty-data-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px; /* 按需调整按钮之间的间距 */
+        justify-content: center;
+    }
+
+    .dxbl-list-box-render-container > .dxbl-scroll-viewer > .dxbl-scroll-viewer-content > ul > li:not([dxbl-bottom-virtual-spacer-element]):not([dxbl-top-virtual-spacer-element]), .dxbl-list-box > .dxbl-scroll-viewer > .dxbl-scroll-viewer-content > ul > li:not([dxbl-bottom-virtual-spacer-element]):not([dxbl-top-virtual-spacer-element]){
+        background-color:white;
+    }
+
+    code {
+        word-wrap: break-word; /* 旧的属性名 */
+        overflow-wrap: break-word; /* 新的属性名，推荐使用 */
+        white-space: pre-wrap; /* 保留空白字符，但允许换行 */
+    }
+</style>

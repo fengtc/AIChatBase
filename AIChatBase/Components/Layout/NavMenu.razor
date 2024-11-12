@@ -1,0 +1,54 @@
+﻿@using AIChatBase.Data.Models.BaseData
+
+<div class="sidebar @StateCssClass">
+
+    <AuthorizeView>
+        <Authorized>
+            <DxAccordion Data="@getMenuData()"
+                UrlMatchMode="NavigationUrlMatchMode.Exact"
+                SelectionMode="NavigationSelectionMode.Single"
+                ExpandMode="AccordionExpandMode.SingleOrNone"
+                ExpandCollapseAction="AccordionExpandCollapseAction.HeaderClick"
+                RootItemExpandButtonDisplayMode="AccordionExpandButtonDisplayMode.End"
+                SubItemExpandButtonIconCssClass="icon-square-plus"
+                SubItemCollapseButtonIconCssClass="icon-square-minus">
+                <DataMappings>
+                    <DxAccordionDataMapping Text="text"
+                        Key="id"
+                        ParentKey="fatherId"
+                        NavigateUrl="url" />
+                </DataMappings>
+            </DxAccordion>
+        </Authorized>
+        <NotAuthorized>
+            <DxTreeView AllowSelectNodes="true" CssClass="app-sidebar">
+                <Nodes>
+                    <DxTreeViewNode NavigateUrl="login" Text="登录"></DxTreeViewNode>
+                </Nodes>
+            </DxTreeView>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+@code {
+    [Parameter] public string? StateCssClass { get; set; }
+    /// <summary>
+    /// 传参：菜单列表
+    /// </summary>
+    [Parameter] public List<OssMenuItem>? MenuDatas { get; set; }
+
+
+    private List<OssMenuItem> getMenuData()
+    {
+        var newMenuDatas = new List<OssMenuItem>()
+        {
+            new OssMenuItem(){text="首页",url="/",order=1},
+        };
+        // if (MenuDatas != null && MenuDatas.Count > 0)
+        // {
+        //     MenuDatas = MenuDatas.OrderBy(o => o.order).ToList();
+        //     return MenuDatas;
+        // }
+        return newMenuDatas;
+    }
+}
